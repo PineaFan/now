@@ -79,10 +79,8 @@ def clampfields(fields: list, length):
 
 
 def highlight(string, percent, colour):
-    string = colour + string
     characters = round((percent / 100) * len(string))
-    string = string[:characters] + C.c + string[characters:]
-    return string
+    return colour + string[:characters] + C.c + string[characters:]
 
 
 while True:
