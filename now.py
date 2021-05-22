@@ -133,13 +133,31 @@ while True:
         if sensor in sensorNames:
             sensor = sensorNames[sensor]
         tempsens.append((sensor, s[0]/s[1]))
-    tempav = temp/count
-    tempcol = C.Blue if tempav < 50 else C.Yellow if tempav < 75 else C.Red
+    try:
+        tempav = temp/count
+        tempcol = C.Blue if tempav < 50 else C.Yellow if tempav < 75 else C.Red
+    except ZeroDivisionError:
+        tempav = 100
+        tempsens = [("No temperature sensors found", -1)]
+        tempcol = C.Blue
+
 
     for item in range(len(tempsens)-1):
         if tempsens[item][0] == "Cores":
             t = tempsens.pop(item)
             tempsens = [t] + tempsens
+
+    swapfields = [
+        f"{clamp(round(psutil.swap_memory().percent, 2), 5)}% Used",
+        f"{humanize.naturalsize(psutil.swap_memory().used)} Used",
+        f"{humanize.naturalsize(psutil.swap_memory().total)} Total"
+    ]
+    swappercent = psutil.swap_memory().percent
+    if not psutil.swap_memory().total:
+        swapfields = [
+            "Swap is not avaliable"
+        ]
+        swappercent = -1
 
     strings = [
         highlight(
@@ -175,7 +193,7 @@ while True:
                 level=(cpupercent > 80)
             ),
             percent=cpupercent,
-            colour=C.Red if (cpupercent > 80 and cycle % 2) else colgen(cpupercent, [33, 66]),
+            colour=C.RedInverted if (cpupercent > 80 and cycle % 2) else colgen(cpupercent, [33, 66]),
         ),
         highlight(
             clampfields(
@@ -189,21 +207,17 @@ while True:
                 level=(mempercent > 80)
             ),
             percent=mempercent,
-            colour=C.Red if (mempercent > 80 and cycle % 2) else colgen(mempercent, [33, 66])
+            colour=C.RedInverted if (mempercent > 80 and cycle % 2) else colgen(mempercent, [33, 66])
         ),
         highlight(
             clampfields(
-                fields=[
-                    f"{clamp(round(psutil.swap_memory().percent, 2), 5)}% Used",
-                    f"{humanize.naturalsize(psutil.swap_memory().used)} Used",
-                    f"{humanize.naturalsize(psutil.swap_memory().total)} Total"
-                ],
+                fields=swapfields,
                 length=posswidth-11,
                 warning="High Swap Usage",
-                level=(psutil.swap_memory().percent > 80)
+                level=(0 > psutil.swap_memory().percent > 80)
             ),
-            percent=psutil.swap_memory().percent,
-            colour=C.Red if (psutil.swap_memory().percent > 80 and cycle % 2) else colgen(psutil.swap_memory().percent, [33, 66])
+            percent=swappercent if swappercent > 0 else 100,
+            colour=C.RedInverted if (0 > psutil.swap_memory().percent > 80 and cycle % 2) else colgen(psutil.swap_memory().percent, [33, 66])
         ),
         highlight(
             clampfields(
@@ -221,10 +235,10 @@ while True:
                 fields=[f"{t[0]}: {round(t[1])}°c" for t in tempsens],
                 length=posswidth-11,
                 warning="High temperature",
-                level=(tempav > 75)
+                level=(0 > tempav > 75)
             ),
             percent=tempav,
-            colour=C.Red if (tempav > 75 and cycle % 2) else tempcol
+            colour=C.RedInverted if (0 > tempav > 75 and cycle % 2) else tempcol
         ),
     ]
     os.system("clear")
