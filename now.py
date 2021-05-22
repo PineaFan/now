@@ -99,16 +99,20 @@ while True:
     posswidth = int(th)
 
     procs = list()
-    for proc in psutil.process_iter(attrs=None, ad_value=None):
-        procInfo = proc.as_dict(attrs=['name', 'cpu_percent', 'memory_percent'])
-        procs.append(procInfo)
-    mostCPU = procs[0]
-    mostRAM = procs[0]
-    for p in procs:
-        if p["cpu_percent"] > mostCPU["cpu_percent"]:
-            mostCPU = p
-        if p["memory_percent"] > mostCPU["memory_percent"]:
-            mostRAM = p
+    try:
+        for proc in psutil.process_iter(attrs=None, ad_value=None):
+            procInfo = proc.as_dict(attrs=['name', 'cpu_percent', 'memory_percent'])
+            procs.append(procInfo)
+        mostCPU = procs[0]
+        mostRAM = procs[0]
+        for p in procs:
+            if p["cpu_percent"] > mostCPU["cpu_percent"]:
+                mostCPU = p
+            if p["memory_percent"] > mostCPU["memory_percent"]:
+                mostRAM = p
+    except psutil.ProcessLookupError:
+        mostCPU = procs[0]
+        mostRAM = procs[0]
 
     cpupercent = psutil.getloadavg()[0]*10
     mempercent = round((psutil.virtual_memory().used/psutil.virtual_memory().total)*100, 2)
