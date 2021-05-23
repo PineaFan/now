@@ -137,7 +137,7 @@ while True:
         for p in procs:
             if p["cpu_percent"] > mostCPU["cpu_percent"]:
                 mostCPU = p
-            if p["memory_percent"] > mostCPU["memory_percent"]:
+            if p["memory_percent"] > mostRAM["memory_percent"]:
                 mostRAM = p
     except psutil.NoSuchProcess:
         mostCPU = procs[0]
