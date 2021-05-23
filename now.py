@@ -4,6 +4,8 @@ import os
 import sys
 import platform
 
+useFahrenheit = False
+
 try:
     import humanize
 except ModuleNotFoundError:
@@ -162,7 +164,7 @@ while True:
     }
     temp, count = 0, 0
     try:
-        sensors = psutil.sensors_temperatures()
+        sensors = psutil.sensors_temperatures(fahrenheit=useFahrenheit)
     except AttributeError:
         sensors = []
     tempsens = []
@@ -178,9 +180,9 @@ while True:
         tempsens.append((sensor, s[0]/s[1]))
     try:
         tempav = temp/count
-        tempcol = C.Blue if tempav < 50 else C.Yellow if tempav < 75 else C.Red
+        tempcol = C.Blue if tempav < (122 if useFahrenheit else 75) else C.Yellow if tempav < (167 if useFahrenheit else 75) else C.Red
     except ZeroDivisionError:
-        tempav = 100
+        tempav = (212 if useFahrenheit else 100)
         tempsens = [("No temperature sensors found", -1)]
         tempcol = C.Blue
 
@@ -276,13 +278,13 @@ while True:
         ),
         highlight(
             clampfields(
-                fields=[f"{t[0]}: {round(t[1])}°c" for t in tempsens],
+                fields=[f"{t[0]}: {round(t[1])}°{'F' if useFahrenheit else 'C'}" for t in tempsens],
                 length=posswidth,
                 warning="High temperature",
-                level=(0 > tempav > 75)
+                level=(0 > tempav > (167 if useFahrenheit else 75))
             ),
-            percent=tempav,
-            colour=C.RedInverted if (0 > tempav > 75 and cycle % 2) else tempcol
+            percent=(((tempav - 32) * (5/9) ) if useFahrenheit else tempav),
+            colour=C.RedInverted if (0 > tempav > (167 if useFahrenheit else 75) and cycle % 2) else tempcol
         ),
     ]
     os.system(clearCommand)
