@@ -180,7 +180,7 @@ while True:
         tempsens = [("No temperature sensors found", -1)]
         tempcol = C.Blue
 
-    for item in range(len(tempsens)-1):
+    for item in range(len(tempsens)):
         if tempsens[item][0] == "Cores":
             t = tempsens.pop(item)
             tempsens = [t] + tempsens
