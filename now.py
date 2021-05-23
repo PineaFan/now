@@ -142,7 +142,10 @@ while True:
         "iwlwifi_1": "WIFI"
     }
     temp, count = 0, 0
-    sensors = psutil.sensors_temperatures()
+    try:
+        sensors = psutil.sensors_temperatures()
+    except AttributeError:
+        sensors = []
     tempsens = []
     for sensor in sensors:
         s = [0, 0]
