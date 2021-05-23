@@ -213,6 +213,7 @@ while True:
             clampfields(
                 fields=[
                     f"{len(psutil.pids())} Processes"
+                    f"Highest: {topProcs}"
                 ],
                 length=posswidth
             ),
