@@ -139,7 +139,7 @@ while True:
                 mostCPU = p
             if p["memory_percent"] > mostCPU["memory_percent"]:
                 mostRAM = p
-    except psutil.ProcessLookupError:
+    except psutil.NoSuchProcess:
         mostCPU = procs[0]
         mostRAM = procs[0]
 
