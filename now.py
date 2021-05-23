@@ -116,6 +116,7 @@ def warning(string, warning, cycle, param):
 
 
 cycle = 0
+topProcs = 1
 while True:
     if not cycle:
         try:
@@ -142,6 +143,8 @@ while True:
     except psutil.NoSuchProcess:
         mostCPU = procs[0]
         mostRAM = procs[0]
+
+    topProcs = max(topProcs, len(psutil.pids()))
 
     cpupercent = psutil.getloadavg()[0]*10
     mempercent = round((psutil.virtual_memory().used/psutil.virtual_memory().total)*100, 2)
@@ -213,8 +216,8 @@ while True:
                 ],
                 length=posswidth
             ),
-            percent=((len(psutil.pids())/500)*100),
-            colour=colgen(((len(psutil.pids())/500)*100), [33, 66])
+            percent=((len(psutil.pids())/topProcs)*100),
+            colour=colgen(((len(psutil.pids())/topProcs)*100), [33, 66])
         ),
         highlight(
             clampfields(
