@@ -115,7 +115,6 @@ def warning(string, warning, cycle, param):
 
 cycle = 0
 while True:
-    cycle = (cycle + 1) % 4
     if not cycle:
         try:
             th = os.get_terminal_size().columns
@@ -123,6 +122,8 @@ while True:
         except OSError:
             _, th = os.popen('stty size', 'r').read().split()
             posswidth = int(th) - 11
+
+    cycle = (cycle + 1) % 4
 
     procs = list()
     try:
