@@ -220,7 +220,7 @@ while True:
                 warning="High Swap Usage",
                 level=(0 > psutil.swap_memory().percent > 80)
             ),
-            percent=swappercent if swappercent > 0 else 100,
+            percent=swappercent if swappercent >= 0 else 100,
             colour=C.RedInverted if (0 > psutil.swap_memory().percent > 80 and cycle % 2) else colgen(psutil.swap_memory().percent, [33, 66])
         ),
         highlight(
