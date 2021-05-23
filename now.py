@@ -1,6 +1,7 @@
 import datetime
 import time
 import os
+import sys
 import platform
 
 try:
@@ -8,14 +9,15 @@ try:
 except ModuleNotFoundError:
     x = input("Module humanize not found - Install it? [Y/n] ")
     if x == "" or x.lower() == "y":
-        os.system("pip install humanize")
+        os.system(f"{sys} -m install humanize --user")
 
 try:
     import psutil
 except ModuleNotFoundError:
     x = input("Module psutil not found - Install it? [Y/n] ")
     if x == "" or x.lower() == "y":
-        os.system("pip install psutil")
+        os.system(f"{sys} -m install psutil --user")
+
 
 class C:
     c = '\033[0m'
@@ -114,8 +116,13 @@ def warning(string, warning, cycle, param):
 cycle = 0
 while True:
     cycle = (cycle + 1) % 4
-    th = os.get_terminal_size().columns
-    posswidth = int(th) - 11
+    if not cycle:
+        try:
+            th = os.get_terminal_size().columns
+            posswidth = int(th) - 11
+        except OSError:
+            _, th = os.popen('stty size', 'r').read().split()
+            posswidth = int(th) - 11
 
     procs = list()
     try:
