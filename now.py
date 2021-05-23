@@ -137,6 +137,7 @@ cycle = 0
 minProcs = 10000
 topProcs = 1
 while True:
+    skipMI = False
     if not cycle:
         try:
             th = os.get_terminal_size().columns
@@ -160,8 +161,7 @@ while True:
             if p["memory_percent"] > mostRAM["memory_percent"]:
                 mostRAM = p
     except (psutil.NoSuchProcess, TypeError, psutil.ProcessLookupError):
-        mostCPU = procs[0]
-        mostRAM = procs[0]
+        skipMI = True
 
     minProcs = min(minProcs, len(psutil.pids()))
     topProcs = max(topProcs, len(psutil.pids()))
@@ -251,7 +251,7 @@ while True:
                     f"{round(psutil.cpu_freq().max/1000, 1)}GHz"
                 ],
                 length=posswidth,
-                warning=f"{mostCPU['name']}: {round(mostCPU['cpu_percent']/psutil.cpu_count(), 2)}% CPU",
+                warning=f"{mostCPU['name']}: {round(mostCPU['cpu_percent']/psutil.cpu_count(), 2)}% CPU" if not skipMI else "High CPU Usage",
                 level=(cpupercent > 80)
             ),
             percent=cpupercent,
@@ -265,7 +265,7 @@ while True:
                     f"{humanize.naturalsize(psutil.virtual_memory().total, False, True)} Total"
                 ],
                 length=posswidth,
-                warning=f"{mostRAM['name']}: {round(mostRAM['memory_percent'], 2)}% RAM",
+                warning=f"{mostRAM['name']}: {round(mostRAM['memory_percent'], 2)}% RAM" if not skipMI else "High RAM Usage",
                 level=(mempercent > 80)
             ),
             percent=mempercent,
