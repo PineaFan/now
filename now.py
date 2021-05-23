@@ -60,7 +60,7 @@ class C:
 clearCommand = "clear"
 if platform.system() == "Windows":
     clearCommand = "cls"
-    x = input(f"{C.red}Is this text in red?{C.c} [y/N]")
+    x = input(f"{C.Red}Is this text in red?{C.c} [y/N]")
     if x == "" or x.lower() == "n":
         for n in [i for i in C.__dict__.keys() if i[:1] != '_']:
             setattr(C, n, "")
