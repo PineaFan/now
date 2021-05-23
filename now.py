@@ -6,6 +6,8 @@ import platform
 
 # Use a temperature of *C*elcius, *F*ahrenheit, *K*elvin, or *R*ankine
 temperature = "c"
+# How long to wait before updating stats (seconds)
+refreshRate = 0.5
 
 try:
     import humanize
@@ -310,4 +312,4 @@ while True:
     print(f"{C.c}[ {C.Yellow     }DISK {C.c}| " + strings[5] + f"{C.c} ]")
     print(f"{C.c}[ {C.Green      }TEMP {C.c}| " + strings[6] + f"{C.c} ]", end="\r")
 
-    time.sleep(0.5)
+    time.sleep(refreshRate)
