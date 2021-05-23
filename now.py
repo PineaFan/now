@@ -3,6 +3,7 @@ import psutil
 import humanize
 import time
 import os
+import platform
 
 
 class C:
@@ -42,6 +43,9 @@ class C:
     CyanInverted = '\033[106m'
     WhiteInverted = '\033[107m'
 
+if platform.system() == "Windows":
+    for n in [i for i in C.__dict__.keys() if i[:1] != '_']:
+        setattr(C, n, "")
 
 def colgen(percent, ranges):
     if percent < ranges[0]:
