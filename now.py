@@ -1,10 +1,21 @@
 import datetime
-import psutil
-import humanize
 import time
 import os
 import platform
 
+try:
+    import humanize
+except ModuleNotFoundError:
+    x = input("Module humanize not found - Install it? [Y/n] ")
+    if x == "" or x.lower() == "y":
+        os.system("pip install humanize")
+
+try:
+    import psutil
+except ModuleNotFoundError:
+    x = input("Module psutil not found - Install it? [Y/n] ")
+    if x == "" or x.lower() == "y":
+        os.system("pip install psutil")
 
 class C:
     c = '\033[0m'
@@ -43,9 +54,11 @@ class C:
     CyanInverted = '\033[106m'
     WhiteInverted = '\033[107m'
 
+
 if platform.system() == "Windows":
     for n in [i for i in C.__dict__.keys() if i[:1] != '_']:
         setattr(C, n, "")
+
 
 def colgen(percent, ranges):
     if percent < ranges[0]:
@@ -148,7 +161,6 @@ while True:
         tempav = 100
         tempsens = [("No temperature sensors found", -1)]
         tempcol = C.Blue
-
 
     for item in range(len(tempsens)-1):
         if tempsens[item][0] == "Cores":
