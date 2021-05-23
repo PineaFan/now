@@ -59,9 +59,11 @@ class C:
 
 clearCommand = "clear"
 if platform.system() == "Windows":
-    for n in [i for i in C.__dict__.keys() if i[:1] != '_']:
-        setattr(C, n, "")
     clearCommand = "cls"
+    x = input(f"{C.red}Is this text in red?{C.c} [y/N]")
+    if x == "" or x.lower() == "n":
+        for n in [i for i in C.__dict__.keys() if i[:1] != '_']:
+            setattr(C, n, "")
 
 
 def colgen(percent, ranges):
