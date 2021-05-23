@@ -299,7 +299,7 @@ while True:
                 warning="High temperature",
                 level=(0 > tempav > convertTemp(75)[0])
             ),
-            percent=convertTemp(75, "c")[0],
+            percent=convertTemp(tempav, "c")[0],
             colour=C.RedInverted if (0 > tempav > convertTemp(75)[0] and cycle % 2) else tempcol
         ),
     ]
