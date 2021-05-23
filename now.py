@@ -114,8 +114,8 @@ def warning(string, warning, cycle, param):
 cycle = 0
 while True:
     cycle = (cycle + 1) % 4
-    _, th = os.popen('stty size', 'r').read().split()
-    posswidth = int(th)
+    th = os.get_terminal_size().columns
+    posswidth = int(th) - 11
 
     procs = list()
     try:
@@ -191,7 +191,7 @@ while True:
                     f"{datetime.datetime.now().strftime('%H:%M:%S')}",
                     f"{datetime.datetime.now().strftime('%y-%m-%d')}"
                 ],
-                length=posswidth-11
+                length=posswidth
             ),
             percent=(int(datetime.datetime.now().strftime('%S')))/60*100,
             colour=colgen(int(datetime.datetime.now().strftime('%M')), [20, 40])
@@ -201,7 +201,7 @@ while True:
                 fields=[
                     f"{len(psutil.pids())} Processes"
                 ],
-                length=posswidth-11
+                length=posswidth
             ),
             percent=((len(psutil.pids())/500)*100),
             colour=colgen(((len(psutil.pids())/500)*100), [33, 66])
@@ -213,7 +213,7 @@ while True:
                     f"{psutil.cpu_count()} Cores",
                     f"{round(psutil.cpu_freq().max/1000, 1)}GHz"
                 ],
-                length=posswidth-11,
+                length=posswidth,
                 warning=f"{mostCPU['name']}: {round(mostCPU['cpu_percent']/psutil.cpu_count(), 2)}% CPU",
                 level=(cpupercent > 80)
             ),
@@ -227,7 +227,7 @@ while True:
                     f"{humanize.naturalsize(psutil.virtual_memory().used, False, True)} Used",
                     f"{humanize.naturalsize(psutil.virtual_memory().total, False, True)} Total"
                 ],
-                length=posswidth-11,
+                length=posswidth,
                 warning=f"{mostRAM['name']}: {round(mostRAM['memory_percent'], 2)}% RAM",
                 level=(mempercent > 80)
             ),
@@ -237,7 +237,7 @@ while True:
         highlight(
             clampfields(
                 fields=swapfields,
-                length=posswidth-11,
+                length=posswidth,
                 warning="High Swap Usage",
                 level=(0 > psutil.swap_memory().percent > 80)
             ),
@@ -250,7 +250,7 @@ while True:
                     f"{clamp(psutil.disk_usage('/').percent, 5)}% Used",
                     f"{len([d.mountpoint for d in psutil.disk_partitions()])} Mounts"
                 ] + [d.mountpoint for d in psutil.disk_partitions()],
-                length=posswidth-11
+                length=posswidth
             ),
             percent=diskpercent,
             colour=colgen(diskpercent, [33, 66])
@@ -258,7 +258,7 @@ while True:
         highlight(
             clampfields(
                 fields=[f"{t[0]}: {round(t[1])}°c" for t in tempsens],
-                length=posswidth-11,
+                length=posswidth,
                 warning="High temperature",
                 level=(0 > tempav > 75)
             ),
