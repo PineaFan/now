@@ -116,7 +116,7 @@ def warning(string, warning, cycle, param):
 
 
 cycle = 0
-minProcs = 1
+minProcs = 10000
 topProcs = 1
 while True:
     if not cycle:
