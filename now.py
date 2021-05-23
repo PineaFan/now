@@ -116,6 +116,7 @@ def warning(string, warning, cycle, param):
 
 
 cycle = 0
+minProcs = 1
 topProcs = 1
 while True:
     if not cycle:
@@ -144,7 +145,10 @@ while True:
         mostCPU = procs[0]
         mostRAM = procs[0]
 
+    minProcs = min(minProcs, len(psutil.pids()))
     topProcs = max(topProcs, len(psutil.pids()))
+    procs = len(psutil.pids())
+    pidpercent = abs((((topProcs-procs)-(topProcs-minProcs)) / topProcs) * 100)
 
     cpupercent = psutil.getloadavg()[0]*10
     mempercent = round((psutil.virtual_memory().used/psutil.virtual_memory().total)*100, 2)
@@ -213,12 +217,14 @@ while True:
             clampfields(
                 fields=[
                     f"{len(psutil.pids())} Processes",
-                    f"Highest: {topProcs}"
+                    f"Lowest: {minProcs}",
+                    f"Highest: {topProcs}",
+                    str(pidpercent)
                 ],
                 length=posswidth
             ),
-            percent=((len(psutil.pids())/topProcs)*100),
-            colour=colgen(((len(psutil.pids())/topProcs)*100), [33, 66])
+            percent=(pidpercent),
+            colour=colgen(pidpercent, [33, 66])
         ),
         highlight(
             clampfields(
