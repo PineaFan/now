@@ -55,9 +55,11 @@ class C:
     WhiteInverted = '\033[107m'
 
 
+clearCommand = "clear"
 if platform.system() == "Windows":
     for n in [i for i in C.__dict__.keys() if i[:1] != '_']:
         setattr(C, n, "")
+    clearCommand = "cls"
 
 
 def colgen(percent, ranges):
@@ -264,7 +266,7 @@ while True:
             colour=C.RedInverted if (0 > tempav > 75 and cycle % 2) else tempcol
         ),
     ]
-    os.system("clear")
+    os.system(clearCommand)
     print(f"{C.c}[ {C.c          }TIME {C.c}| " + strings[0] + f"{C.c} ]")
     print(f"{C.c}[ {C.Red        }PROC {C.c}| " + strings[1] + f"{C.c} ]")
     print(f"{C.c}[ {C.Blue       }CPU  {C.c}| " + strings[2] + f"{C.c} ]")
