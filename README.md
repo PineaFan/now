@@ -56,16 +56,18 @@ Temperature
 >
 > If your temperature is above 75°c, the TEMP bar will flash
 >
-> If you are American, you can use °F by editing changing `useFahrenheit` (Line 7) to True
+> If you are American, you can use °F by editing changing `temperature` (Line 8) to "f"
+>
+> Other temperature units are Celsius, Kelvin and Rankine
 >
 > Special names:
-> 
+>
 > Name           | Displayed
 > ---------------|----------
 > acpitz         | Sockets
 > pch_cannonlake | PCH
 > coretemp       | Cores
 > iwlwifi_1      | WIFI
-> 
+>
 > `coretemp`  / `Cores` is always sorted shown before all others
 >

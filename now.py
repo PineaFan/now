@@ -4,7 +4,8 @@ import os
 import sys
 import platform
 
-useFahrenheit = False
+# Use a temperature of *C*elcius, *F*ahrenheit, *K*elvin, or *R*ankine
+temperature = "c"
 
 try:
     import humanize
@@ -19,6 +20,19 @@ except ModuleNotFoundError:
     x = input("Module psutil not found - Install it? [Y/n] ")
     if x == "" or x.lower() == "y":
         os.system(f"{sys} -m install psutil --user")
+
+
+def convertTemp(temperature, unit=temperature):
+    temperature = int(temperature)
+    unit = unit.lower()
+    if unit == "c":
+        return temperature, "°C"
+    elif unit == "f":
+        return (temperature * (9/5)) + 32, "°F"
+    elif unit == "k":
+        return temperature + 273.15, "K"
+    elif unit == "r":
+        return (temperature * (9/5)) + 32 + 459.67, "°R"
 
 
 class C:
@@ -164,7 +178,7 @@ while True:
     }
     temp, count = 0, 0
     try:
-        sensors = psutil.sensors_temperatures(fahrenheit=useFahrenheit)
+        sensors = psutil.sensors_temperatures()
     except AttributeError:
         sensors = []
     tempsens = []
@@ -180,9 +194,9 @@ while True:
         tempsens.append((sensor, s[0]/s[1]))
     try:
         tempav = temp/count
-        tempcol = C.Blue if tempav < (122 if useFahrenheit else 75) else C.Yellow if tempav < (167 if useFahrenheit else 75) else C.Red
+        tempcol = C.Blue if tempav < 50 else C.Yellow if tempav < 75 else C.Red
     except ZeroDivisionError:
-        tempav = (212 if useFahrenheit else 100)
+        tempav = convertTemp(100)[0]
         tempsens = [("No temperature sensors found", -1)]
         tempcol = C.Blue
 
@@ -278,13 +292,13 @@ while True:
         ),
         highlight(
             clampfields(
-                fields=[f"{t[0]}: {round(t[1])}°{'F' if useFahrenheit else 'C'}" for t in tempsens],
+                fields=[f"{t[0]}: {round(convertTemp(t[1])[0])}{convertTemp(0)[1]}" for t in tempsens],
                 length=posswidth,
                 warning="High temperature",
-                level=(0 > tempav > (167 if useFahrenheit else 75))
+                level=(0 > tempav > convertTemp(75)[0])
             ),
-            percent=(((tempav - 32) * (5/9) ) if useFahrenheit else tempav),
-            colour=C.RedInverted if (0 > tempav > (167 if useFahrenheit else 75) and cycle % 2) else tempcol
+            percent=convertTemp(75, "c")[0],
+            colour=C.RedInverted if (0 > tempav > convertTemp(75)[0] and cycle % 2) else tempcol
         ),
     ]
     os.system(clearCommand)
