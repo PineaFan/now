@@ -218,8 +218,7 @@ while True:
                 fields=[
                     f"{len(psutil.pids())} Processes",
                     f"Lowest: {minProcs}",
-                    f"Highest: {topProcs}",
-                    str(pidpercent)
+                    f"Highest: {topProcs}"
                 ],
                 length=posswidth
             ),
