@@ -3,6 +3,7 @@ import time
 import os
 import sys
 import platform
+from typing import ValuesView
 
 # Use a temperature of *C*elcius, *F*ahrenheit, *K*elvin, or *R*ankine
 temperature = "c"
@@ -82,6 +83,12 @@ if platform.system() == "Windows":
     if x == "" or x.lower() == "n":
         for n in [i for i in C.__dict__.keys() if i[:1] != '_']:
             setattr(C, n, "")
+
+
+def transformCPU(value):
+    if platform.system == "darwin":
+        return value / psutil.cpu_count()
+    return value
 
 
 def colgen(percent, ranges):
@@ -169,7 +176,7 @@ while True:
     pidpercent = abs((((topProcs-procs)-(topProcs-minProcs)) / topProcs) * 100)
 
     cpupercent = psutil.getloadavg()
-    cpupercent = (sum(cpupercent)/len(cpupercent))*10
+    cpupercent = transformCPU((sum(cpupercent)/len(cpupercent))*10)
     mempercent = round((psutil.virtual_memory().used/psutil.virtual_memory().total)*100, 2)
     diskpercent = psutil.disk_usage('/').percent
 
