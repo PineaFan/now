@@ -98,7 +98,7 @@ def clamp(string, length):
         spaces = " " * (length - len(string))
         return spaces + string
     if len(string) > length:
-        return string[length:]
+        return string[:length]
     return string
 
 
@@ -169,7 +169,7 @@ while True:
     pidpercent = abs((((topProcs-procs)-(topProcs-minProcs)) / topProcs) * 100)
 
     cpupercent = psutil.getloadavg()
-    cpupercent = (sum(psutil.getloadavg())/len(psutil.getloadavg()))*10
+    cpupercent = (sum(cpupercent)/len(cpupercent))*10
     mempercent = round((psutil.virtual_memory().used/psutil.virtual_memory().total)*100, 2)
     diskpercent = psutil.disk_usage('/').percent
 
@@ -247,7 +247,7 @@ while True:
         highlight(
             clampfields(
                 fields=[
-                    f"{clamp(round(cpupercent, 3), 5)}% Load",
+                    f"{clamp(str(round(cpupercent, 3)), 5)}% Load",
                     f"{psutil.cpu_count()} Cores",
                     f"{round(psutil.cpu_freq().max/1000, 1)}GHz"
                 ],
