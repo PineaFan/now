@@ -86,7 +86,7 @@ if platform.system() == "Windows":
 
 
 def transformCPU(value):
-    if platform.system == "darwin":
+    if platform.system == "Darwin":
         return value / psutil.cpu_count()
     return value
 
