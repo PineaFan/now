@@ -168,7 +168,8 @@ while True:
     procs = len(psutil.pids())
     pidpercent = abs((((topProcs-procs)-(topProcs-minProcs)) / topProcs) * 100)
 
-    cpupercent = psutil.getloadavg()[0]*10
+    cpupercent = psutil.getloadavg()
+    cpupercent = (sum(psutil.getloadavg())/len(psutil.getloadavg()))*10
     mempercent = round((psutil.virtual_memory().used/psutil.virtual_memory().total)*100, 2)
     diskpercent = psutil.disk_usage('/').percent
 
