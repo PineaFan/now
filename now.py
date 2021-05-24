@@ -94,9 +94,9 @@ def transformCPU(value):
 
 def getTemps():
     if platform.system() == "Darwin":
-        temp = int(subprocess.check_output(["osx-cpu-temp"])[:-2])
+        temp = float(subprocess.check_output(["osx-cpu-temp"]).decode()[:-3])
         tempcol = C.Blue if temp < 50 else C.Yellow if temp < 75 else C.Red
-        return temp, temp, tempcol
+        return temp, [("Cores", temp)], tempcol
     sensorNames = {
         "acpitz": "Sockets",
         "pch_cannonlake": "PCH",
