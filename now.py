@@ -2,6 +2,7 @@ import datetime
 import time
 import os
 import sys
+import subprocess
 import platform
 from typing import ValuesView
 
@@ -90,6 +91,48 @@ def transformCPU(value):
         return value / psutil.cpu_count()
     return value
 
+
+def getTemps():
+    if platform.system() == "Darwin":
+        temp = int(subprocess.check_output(["osx-cpu-temp"])[:-2])
+        tempcol = C.Blue if temp < 50 else C.Yellow if temp < 75 else C.Red
+        return temp, temp, tempcol
+    sensorNames = {
+        "acpitz": "Sockets",
+        "pch_cannonlake": "PCH",
+        "coretemp": "Cores",
+        "iwlwifi_1": "WIFI"
+    }
+    temp, count = 0, 0
+    try:
+        sensors = psutil.sensors_temperatures()
+    except AttributeError:
+        sensors = []
+    tempsens = []
+    for sensor in sensors:
+        s = [0, 0]
+        for each in sensors[sensor]:
+            temp += each.current
+            s[0] += each.current
+            count += 1
+            s[1] += 1
+        if sensor in sensorNames:
+            sensor = sensorNames[sensor]
+        tempsens.append((sensor, s[0]/s[1]))
+    try:
+        tempav = temp/count
+        tempcol = C.Blue if tempav < 50 else C.Yellow if tempav < 75 else C.Red
+    except ZeroDivisionError:
+        tempav = convertTemp(100)[0]
+        tempsens = [("No temperature sensors found", -1)]
+        tempcol = C.Blue
+
+    for item in range(len(tempsens)):
+        if tempsens[item][0] == "Cores":
+            t = tempsens.pop(item)
+            tempsens = [t] + tempsens
+
+    return tempav, tempsens, tempcol
 
 def colgen(percent, ranges):
     if percent < ranges[0]:
@@ -180,40 +223,7 @@ while True:
     mempercent = round((psutil.virtual_memory().used/psutil.virtual_memory().total)*100, 2)
     diskpercent = psutil.disk_usage('/').percent
 
-    sensorNames = {
-        "acpitz": "Sockets",
-        "pch_cannonlake": "PCH",
-        "coretemp": "Cores",
-        "iwlwifi_1": "WIFI"
-    }
-    temp, count = 0, 0
-    try:
-        sensors = psutil.sensors_temperatures()
-    except AttributeError:
-        sensors = []
-    tempsens = []
-    for sensor in sensors:
-        s = [0, 0]
-        for each in sensors[sensor]:
-            temp += each.current
-            s[0] += each.current
-            count += 1
-            s[1] += 1
-        if sensor in sensorNames:
-            sensor = sensorNames[sensor]
-        tempsens.append((sensor, s[0]/s[1]))
-    try:
-        tempav = temp/count
-        tempcol = C.Blue if tempav < 50 else C.Yellow if tempav < 75 else C.Red
-    except ZeroDivisionError:
-        tempav = convertTemp(100)[0]
-        tempsens = [("No temperature sensors found", -1)]
-        tempcol = C.Blue
-
-    for item in range(len(tempsens)):
-        if tempsens[item][0] == "Cores":
-            t = tempsens.pop(item)
-            tempsens = [t] + tempsens
+    tempav, tempsens, tempcol = getTemps()
 
     swapfields = [
         f"{clamp(round(psutil.swap_memory().percent, 2), 5)}% Used",
