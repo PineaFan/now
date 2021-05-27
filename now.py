@@ -4,12 +4,31 @@ import os
 import sys
 import subprocess
 import platform
-from typing import ValuesView
 
 # Use a temperature of *C*elcius, *F*ahrenheit, *K*elvin, or *R*ankine
 temperature = "c"
+
 # How long to wait before updating stats (seconds)
 refreshRate = 0.5
+
+# Which fields to display - Comment any to hide
+fields = [
+    "time",  # Time and date
+    "proc",  # Processes
+    "cpu",   # CPU usage
+    "mem",   # Memory / RAM used
+    "swap",  # Swap space used
+    "disk",  # Disk space used
+    "temp",  # Temperature sensors
+]
+
+
+class String:
+    def __init__(self, title, text, colour):
+        self.title = title
+        self.text = text
+        self.colour = colour
+
 
 try:
     import humanize
@@ -37,6 +56,10 @@ def convertTemp(temperature, unit=temperature):
         return temperature + 273.15, "K"
     elif unit == "r":
         return (temperature * (9/5)) + 32 + 459.67, "°R"
+
+
+def printcol(r, g, b):
+    return f"\033[38;2;{r};{g};{b}m"
 
 
 class C:
@@ -134,6 +157,7 @@ def getTemps():
 
     return tempav, tempsens, tempcol
 
+
 def colgen(percent, ranges):
     if percent < ranges[0]:
         return C.Green
@@ -171,7 +195,7 @@ def clampfields(fields: list, length, warning=None, level=False):
     return string + pad + (">" if incomplete else "=")
 
 
-def highlight(string, percent, colour, warning=False):
+def highlight(string, percent, colour):
     characters = round((percent / 100) * len(string))
     return colour + string[:characters] + C.c + string[characters:]
 
@@ -225,6 +249,10 @@ while True:
 
     tempav, tempsens, tempcol = getTemps()
 
+    second = round(int(datetime.datetime.now().strftime('%S')) / 60 * 255)
+    minute = round(int(datetime.datetime.now().strftime('%M')) / 60 * 255)
+    hour = round(int(datetime.datetime.now().strftime('%H')) / 24 * 255)
+
     swapfields = [
         f"{clamp(round(psutil.swap_memory().percent, 2), 5)}% Used",
         f"{humanize.naturalsize(psutil.swap_memory().used)} Used",
@@ -238,96 +266,130 @@ while True:
         swappercent = -1
 
     strings = [
-        highlight(
-            clampfields(
-                fields=[
-                    f"{datetime.datetime.now().strftime('%H:%M:%S')}",
-                    f"{datetime.datetime.now().strftime('%y-%m-%d')}"
-                ],
-                length=posswidth
+        String(
+            title="TIME",
+            text=highlight(
+                clampfields(
+                    fields=[
+                        f"{datetime.datetime.now().strftime('%H:%M:%S')}",
+                        f"{datetime.datetime.now().strftime('%y-%m-%d')}"
+                    ],
+                    length=posswidth
+                ),
+                percent=(int(datetime.datetime.now().strftime('%S')))/60*100,
+                colour=printcol(hour, minute, second)
             ),
-            percent=(int(datetime.datetime.now().strftime('%S')))/60*100,
-            colour=colgen(int(datetime.datetime.now().strftime('%M')), [20, 40])
+            colour=C.c
         ),
-        highlight(
-            clampfields(
-                fields=[
-                    f"{len(psutil.pids())} Processes",
-                    f"Lowest: {minProcs}",
-                    f"Highest: {topProcs}"
-                ],
-                length=posswidth
+        String(
+            title="PROC",
+            text=highlight(
+                clampfields(
+                    fields=[
+                        f"{len(psutil.pids())} Processes",
+                        f"Lowest: {minProcs}",
+                        f"Highest: {topProcs}"
+                    ],
+                    length=posswidth
+                ),
+                percent=(pidpercent),
+                colour=colgen(pidpercent, [33, 66])
             ),
-            percent=(pidpercent),
-            colour=colgen(pidpercent, [33, 66])
+            colour=C.Red
         ),
-        highlight(
-            clampfields(
-                fields=[
-                    f"{clamp(str(round(cpupercent, 3)), 5)}% Load",
-                    f"{psutil.cpu_count()} Cores",
-                    f"{round(psutil.cpu_freq().max/1000, 1)}GHz"
-                ],
-                length=posswidth,
-                warning=f"{mostCPU['name']}: {round(mostCPU['cpu_percent']/psutil.cpu_count(), 2)}% CPU" if not skipMI else "High CPU Usage",
-                level=(cpupercent > 80)
+        String(
+            title="CPU",
+            text=highlight(
+                clampfields(
+                    fields=[
+                        f"{clamp(str(round(cpupercent, 3)), 5)}% Load",
+                        f"{psutil.cpu_count()} Cores",
+                        f"{round(psutil.cpu_freq().max/1000, 1)}GHz"
+                    ],
+                    length=posswidth,
+                    warning=f"{mostCPU['name']}: {round(mostCPU['cpu_percent']/psutil.cpu_count(), 2)}% CPU" if not skipMI else "High CPU Usage",
+                    level=(cpupercent > 80)
+                ),
+                percent=cpupercent,
+                colour=C.RedInverted if (cpupercent > 80 and cycle % 2) else colgen(cpupercent, [33, 66]),
             ),
-            percent=cpupercent,
-            colour=C.RedInverted if (cpupercent > 80 and cycle % 2) else colgen(cpupercent, [33, 66]),
+            colour=C.Blue
         ),
-        highlight(
-            clampfields(
-                fields=[
-                    f"{clamp(mempercent, 5)}% Used",
-                    f"{humanize.naturalsize(psutil.virtual_memory().used, False, True)} Used",
-                    f"{humanize.naturalsize(psutil.virtual_memory().total, False, True)} Total"
-                ],
-                length=posswidth,
-                warning=f"{mostRAM['name']}: {round(mostRAM['memory_percent'], 2)}% RAM" if not skipMI else "High RAM Usage",
-                level=(mempercent > 80)
+        String(
+            title="MEM",
+            text=highlight(
+                clampfields(
+                    fields=[
+                        f"{clamp(mempercent, 5)}% Used",
+                        f"{humanize.naturalsize(psutil.virtual_memory().used, False, True)} Used",
+                        f"{humanize.naturalsize(psutil.virtual_memory().total, False, True)} Total"
+                    ],
+                    length=posswidth,
+                    warning=f"{mostRAM['name']}: {round(mostRAM['memory_percent'], 2)}% RAM" if not skipMI else "High RAM Usage",
+                    level=(mempercent > 80)
+                ),
+                percent=mempercent,
+                colour=C.RedInverted if (mempercent > 80 and cycle % 2) else colgen(mempercent, [33, 66])
             ),
-            percent=mempercent,
-            colour=C.RedInverted if (mempercent > 80 and cycle % 2) else colgen(mempercent, [33, 66])
+            colour=C.PinkDark
         ),
-        highlight(
-            clampfields(
-                fields=swapfields,
-                length=posswidth,
-                warning="High Swap Usage",
-                level=(0 > psutil.swap_memory().percent > 80)
+        String(
+            title="SWAP",
+            text=highlight(
+                clampfields(
+                    fields=swapfields,
+                    length=posswidth,
+                    warning="High Swap Usage",
+                    level=(0 > psutil.swap_memory().percent > 80)
+                ),
+                percent=swappercent if swappercent >= 0 else 100,
+                colour=C.RedInverted if (0 > psutil.swap_memory().percent > 80 and cycle % 2) else colgen(psutil.swap_memory().percent, [33, 66])
             ),
-            percent=swappercent if swappercent >= 0 else 100,
-            colour=C.RedInverted if (0 > psutil.swap_memory().percent > 80 and cycle % 2) else colgen(psutil.swap_memory().percent, [33, 66])
+            colour=C.YellowDark
         ),
-        highlight(
-            clampfields(
-                fields=[
-                    f"{clamp(psutil.disk_usage('/').percent, 5)}% Used",
-                    f"{len([d.mountpoint for d in psutil.disk_partitions()])} Mounts"
-                ] + [d.mountpoint for d in psutil.disk_partitions()],
-                length=posswidth
+        String(
+            title="DISK",
+            text=highlight(
+                clampfields(
+                    fields=[
+                        f"{clamp(psutil.disk_usage('/').percent, 5)}% Used",
+                        f"{len([d.mountpoint for d in psutil.disk_partitions() if not d.mountpoint.startswith('/snap/')])} Mounts"
+                    ] + [d.mountpoint for d in psutil.disk_partitions() if not d.mountpoint.startswith('/snap/')],
+                    length=posswidth
+                ),
+                percent=diskpercent,
+                colour=colgen(diskpercent, [33, 66])
             ),
-            percent=diskpercent,
-            colour=colgen(diskpercent, [33, 66])
+            colour=C.Yellow
         ),
-        highlight(
-            clampfields(
-                fields=[f"{t[0]}: {round(convertTemp(t[1])[0])}{convertTemp(0)[1]}" for t in tempsens],
-                length=posswidth,
-                warning="High temperature",
-                level=(0 > tempav > convertTemp(75)[0])
+        String(
+            title="TEMP",
+            text=highlight(
+                clampfields(
+                    fields=[f"{t[0]}: {round(convertTemp(t[1])[0])}{convertTemp(0)[1]}" for t in tempsens],
+                    length=posswidth,
+                    warning="High temperature",
+                    level=(0 > tempav > convertTemp(75)[0])
+                ),
+                percent=convertTemp(tempav, "c")[0],
+                colour=C.RedInverted if (0 > tempav > convertTemp(75)[0] and cycle % 2) else tempcol
             ),
-            percent=convertTemp(tempav, "c")[0],
-            colour=C.RedInverted if (0 > tempav > convertTemp(75)[0] and cycle % 2) else tempcol
+            colour=C.Green
         ),
     ]
     os.system(clearCommand)
-    print(f"{C.c}[ {C.c          }TIME {C.c}| " + strings[0] + f"{C.c} ]")
-    print(f"{C.c}[ {C.Red        }PROC {C.c}| " + strings[1] + f"{C.c} ]")
-    print(f"{C.c}[ {C.Blue       }CPU  {C.c}| " + strings[2] + f"{C.c} ]")
-    print(f"{C.c}[ {C.PinkDark   }MEM  {C.c}| " + strings[3] + f"{C.c} ]")
-    print(f"{C.c}[ {C.YellowDark }SWAP {C.c}| " + strings[4] + f"{C.c} ]")
-    print(f"{C.c}[ {C.Yellow     }DISK {C.c}| " + strings[5] + f"{C.c} ]")
-    print(f"{C.c}[ {C.Green      }TEMP {C.c}| " + strings[6] + f"{C.c} ]", end="\r")
+    longest = max([len(s.title) for s in strings])
+    x = len(strings)
+    for s in strings:
+        x -= 1
+        print(f"{C.c}[ {s.colour}{s.title}{' '*(longest-len(s.title))} {C.c}| {s.text}{C.c} ]", end="" if x else "\r")
+
+    # print(f"{C.c}[ {C.c          }TIME {C.c}| " + strings[0] + f"{C.c} ]")
+    # print(f"{C.c}[ {C.Red        }PROC {C.c}| " + strings[1] + f"{C.c} ]")
+    # print(f"{C.c}[ {C.Blue       }CPU  {C.c}| " + strings[2] + f"{C.c} ]")
+    # print(f"{C.c}[ {C.PinkDark   }MEM  {C.c}| " + strings[3] + f"{C.c} ]")
+    # print(f"{C.c}[ {C.YellowDark }SWAP {C.c}| " + strings[4] + f"{C.c} ]")
+    # print(f"{C.c}[ {C.Yellow     }DISK {C.c}| " + strings[5] + f"{C.c} ]")
+    # print(f"{C.c}[ {C.Green      }TEMP {C.c}| " + strings[6] + f"{C.c} ]", end="\r")
 
     time.sleep(refreshRate)
