@@ -249,10 +249,6 @@ while True:
 
     tempav, tempsens, tempcol = getTemps()
 
-    second = round(int(datetime.datetime.now().strftime('%S')) / 60 * 255)
-    minute = round(int(datetime.datetime.now().strftime('%M')) / 60 * 255)
-    hour = round(int(datetime.datetime.now().strftime('%H')) / 24 * 255)
-
     swapfields = [
         f"{clamp(round(psutil.swap_memory().percent, 2), 5)}% Used",
         f"{humanize.naturalsize(psutil.swap_memory().used)} Used",
@@ -277,7 +273,7 @@ while True:
                     length=posswidth
                 ),
                 percent=(int(datetime.datetime.now().strftime('%S')))/60*100,
-                colour=printcol(hour, minute, second)
+                colour=colgen(int(datetime.datetime.now().strftime('%M')), [20, 40])
             ),
             colour=C.c
         ),
