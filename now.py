@@ -35,14 +35,14 @@ try:
 except ModuleNotFoundError:
     x = input("Module humanize not found - Install it? [Y/n] ")
     if x == "" or x.lower() == "y":
-        os.system(f"{sys} -m install humanize --user")
+        os.system(f"{sys.executable} -m install humanize --user")
 
 try:
     import psutil
 except ModuleNotFoundError:
     x = input("Module psutil not found - Install it? [Y/n] ")
     if x == "" or x.lower() == "y":
-        os.system(f"{sys} -m install psutil --user")
+        os.system(f"{sys.executable} -m install psutil --user")
 
 
 def convertTemp(temperature, unit=temperature):
