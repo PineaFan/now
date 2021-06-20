@@ -56,6 +56,8 @@ def convertTemp(temperature, unit=temperature):
         return temperature + 273.15, "K"
     elif unit == "r":
         return (temperature * (9/5)) + 32 + 459.67, "°R"
+    elif unit == "m":
+        return (-0.17156337122024448 * temperature)-46.86253484880978, "•M"
 
 
 def printcol(r, g, b):
